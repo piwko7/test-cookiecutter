@@ -1,0 +1,5 @@
+{
+  "project_name": null,
+  "project_slug": "{{ cookiecutter.project_name | slugify(separator='_') }}",
+  "python_version": "3.11"
+}
