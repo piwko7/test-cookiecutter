@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  app:
+    tty: true
+    build:
+      context: ..
+      dockerfile: ../docker/Dockerfile.app
+      target: dev
+    env_file: .env
+    ports:
+      - 8000:80
+    volumes:
+      - "./app:/app"

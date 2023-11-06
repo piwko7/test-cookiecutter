@@ -1,0 +1,21 @@
+version: "3.9"
+
+services:
+  app:
+    tty: true
+    build:
+      context: ..
+      dockerfile: ../docker/Dockerfile.app
+      target: dev
+      secrets:
+        - PIP_INDEX_URL
+      ssh:
+        - default
+    env_file: app/.env
+    ports:
+      - 8000:80
+
+
+secrets:
+  PIP_INDEX_URL:
+    environment: PIP_INDEX_URL
