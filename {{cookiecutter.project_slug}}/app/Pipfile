@@ -1,30 +1,38 @@
 [[source]]
 name = "pypi"
-url = "https://pypi.org/simple"
+url = "$PIP_INDEX_URL"
 verify_ssl = true
-
-[packages]
-fastapi = "*"
-pydantic = { extras = ["email"], version = "*" }
-uvicorn = { extras = ["standard"], version = "*" }
-
-[dev-packages]
-bandit = "*"
-black = "*"
-factory-boy = "*"
-flake8 = "*"
-flake8-print = "*"
-isort = "*"
-mypy = "*"
-pre-commit = "*"
-pytest = "*"
-pytest-coverage = "*"
-pytest-random-order = "*"
-pytest-socket = "*"
-respx = "*"
 
 [requires]
 python_version = "{{cookiecutter.python_version}}"
 
 [pipenv]
 allow_prereleases = false
+
+[packages]
+azure-cosmos = "<5.0"
+azure-servicebus = "<8.0"
+dependency-injector = "<5.0"
+fastapi = "<1.0"
+httpx = "<1.0"
+nanostore-shared-library = { version = "*", index="pypi" }
+pydantic = {extras = ["email"], version = "<2.0"}
+python-dotenv = "*"
+rollbar = "*"
+uvicorn = "*"
+
+[dev-packages]
+bandit = { extras = ["toml"], version = "*" }
+black = "*"
+factory-boy = "*"
+freezegun = "*"
+isort = "*"
+mypy = "*"
+pre-commit = "*"
+pytest = "*"
+pytest-coverage = "*"
+pytest-random-order = "*"
+bandit-sarif-formatter = {version = "*", index = "pypi"}
+flake8 = {version = "*", index = "pypi"}
+flake8-print = {version = "*", index = "pypi"}
+respx = "*"
