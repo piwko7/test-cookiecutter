@@ -1,0 +1,30 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[packages]
+fastapi = "*"
+pydantic = { extras = ["email"], version = "*" }
+uvicorn = { extras = ["standard"], version = "*" }
+
+[dev-packages]
+bandit = "*"
+black = "*"
+factory-boy = "*"
+flake8 = "*"
+flake8-print = "*"
+isort = "*"
+mypy = "*"
+pre-commit = "*"
+pytest = "*"
+pytest-coverage = "*"
+pytest-random-order = "*"
+pytest-socket = "*"
+respx = "*"
+
+[requires]
+python_version = "{{cookiecutter.python_version}}"
+
+[pipenv]
+allow_prereleases = false
