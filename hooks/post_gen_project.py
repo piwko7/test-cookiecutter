@@ -8,7 +8,7 @@ SUCCESS = "\x1b[1;32m [SUCCESS]:"
 
 
 def copy_dotenv():
-    shutil.copyfile(".env.example", ".env")
+    shutil.copyfile(".app/.env.example", ".env")
 
 
 def print_post_gen_message():
