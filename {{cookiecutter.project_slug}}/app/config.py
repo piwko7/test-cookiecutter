@@ -8,6 +8,7 @@ if TYPE_CHECKING:
 
 
 class Settings(BaseSettings):
+    applicationinsights_connection_string: str = ""
     external_lib_level: str = "WARNING"
     rollbar_access_token: str
     rollbar_environment: str = ""
