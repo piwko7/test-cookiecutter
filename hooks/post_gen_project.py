@@ -11,8 +11,16 @@ def copy_dotenv():
     shutil.copyfile("app/.env.example", "app/.env")
 
 
+def print_post_gen_message():
+    print(
+        "Please replace {{cookiecutter.project_name}} and "
+        "{{cookiecutter.project_name}} in .ci/pipeline.yaml with proper values"
+    )
+
+
 def main():
     copy_dotenv()
+    print_post_gen_message()
 
 
 if __name__ == "__main__":
