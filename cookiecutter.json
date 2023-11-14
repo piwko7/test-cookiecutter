@@ -3,6 +3,6 @@
   "project_slug": "{{ cookiecutter.project_name | slugify(separator='_') }}",
   "python_version": "3.11",
   "_copy_without_render": [
-    "qwer/.ci/pipeline.yaml"
+    "qwer/qwer/.ci/pipeline.yaml"
   ]
 }
