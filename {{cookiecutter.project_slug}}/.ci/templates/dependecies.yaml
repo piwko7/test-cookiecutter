@@ -1,0 +1,55 @@
+parameters:
+  - name: pythonVersion
+    type: string
+    values:
+      - "3.11"
+      - "3.10"
+      - "3.9"
+  - name: workdir
+    type: string
+    default: "."
+
+steps:
+  - task: UsePythonVersion@0
+    displayName: "Use Python ${{ parameters.pythonVersion }}"
+    inputs:
+      versionSpec: "${{ parameters.pythonVersion }}"
+
+  - task: PipAuthenticate@1
+    displayName: "Pip Authenticate"
+    inputs:
+      artifactFeeds: "Nanostore/nanostore"
+      onlyAddExtraIndex: false
+
+  - task: Cache@2
+    displayName: Cache dependencies PIP
+    inputs:
+      key: '"pip" | "$(Agent.OS)" | "pipenv"'
+      path: $(PIP_CACHE_DIR)
+
+  - script: pip install pipenv
+    displayName: Install pipenv
+    env:
+      PIP_CACHE_DIR: $(PIP_CACHE_DIR)
+
+  - task: Cache@2
+    displayName: Cache dependencies PIPENV
+    inputs:
+      key: '"pipenv" | "$(Agent.OS)" | ${{ parameters.workdir }}/Pipfile.lock'
+      path: $(PIPENV_CACHE_DIR)
+
+  - task: Cache@2
+    displayName: Cache dependencies Pipfile.lock
+    inputs:
+      key: '"deps" | "$(Agent.OS)" | ${{ parameters.workdir }}/Pipfile.lock'
+      path: $(WORKON_HOME)
+
+  - script: |
+      set -eo pipefail
+      cd ${{ parameters.workdir }}
+      pipenv sync --dev
+    displayName: Install dependencies
+    env:
+      PIP_CACHE_DIR: $(PIP_CACHE_DIR)
+      PIPENV_CACHE_DIR: $(PIPENV_CACHE_DIR)
+      WORKON_HOME: $(WORKON_HOME)

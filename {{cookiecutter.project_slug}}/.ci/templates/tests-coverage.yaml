@@ -1,0 +1,12 @@
+steps:
+  - task: DownloadBuildArtifacts@1
+    displayName: "Download Coverage"
+    inputs:
+      buildType: "current"
+      downloadType: "single"
+      artifactName: "coverage"
+
+  - template: tasks/publishCoverage.yaml@templates
+    parameters:
+      summaryFileLocation: "$(System.ArtifactsDirectory)/coverage/**/coverage.xml"
+      pathToSources: "$(Build.SourcesDirectory)"

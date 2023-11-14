@@ -11,16 +11,8 @@ def copy_dotenv():
     shutil.copyfile("app/.env.example", "app/.env")
 
 
-def print_post_gen_message():
-    print(
-        f"{INFO} In order to use pulumi you must configure "
-        f"deploy_iaac job in .circleci/config.yml {TERMINATOR}"
-    )
-
-
 def main():
     copy_dotenv()
-    print_post_gen_message()
 
 
 if __name__ == "__main__":

@@ -1,0 +1,36 @@
+parameters:
+  - name: workdir
+    type: string
+    values:
+      - "app"
+      - "azure_functions"
+  - name: pythonVersion
+    type: string
+
+steps:
+  - template: /tasks/pipenvSync.yaml@templates
+    parameters:
+      pythonVersion: ${{ parameters.pythonVersion }}
+      workdir: ${{ parameters.workdir }}
+
+  - script: |
+      cd ${{ parameters.workdir }}
+      ln -s ../shared .shared
+      cp .env.example .env
+      pipenv run flake8 .
+      pipenv run isort --check .
+      pipenv run black --check .
+      pipenv run mypy .
+    displayName: Run ${{ parameters.workdir }} linters
+
+  - script: |
+      cd ${{ parameters.workdir }}
+      pipenv run bandit -r -c ../pyproject.toml --format sarif --output $(Build.SourcesDirectory)/${{ parameters.workdir }}/bandit-report-${{ parameters.workdir }}.sarif .
+    displayName: Bandit ${{ parameters.workdir }}
+
+  - task: PublishBuildArtifacts@1
+    condition: succeededOrFailed()
+    inputs:
+      pathToPublish: $(Build.SourcesDirectory)/${{ parameters.workdir }}/bandit-report-${{ parameters.workdir }}.sarif
+      artifactName: CodeAnalysisLogs
+    displayName: "Publish code analysis logs"

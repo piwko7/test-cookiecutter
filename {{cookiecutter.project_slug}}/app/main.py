@@ -18,7 +18,7 @@ logger = configure_logger("main")
 
 
 def create_app(settings=settings):
-    app = FastAPI(title=f"{{cookiecutter.project_name}}")
+    app = FastAPI(title="{{cookiecutter.project_name}}")
 
     if settings.applicationinsights_connection_string:
         from nano_shared.tracing import configure_tracing

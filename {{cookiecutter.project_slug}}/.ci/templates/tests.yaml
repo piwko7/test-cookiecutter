@@ -1,0 +1,51 @@
+parameters:
+  - name: workdir
+    type: string
+    values:
+      - "app"
+      - "azure_functions"
+  - name: pythonVersion
+    type: string
+
+steps:
+  - template: /tasks/pipenvSync.yaml@templates
+    parameters:
+      pythonVersion: ${{ parameters.pythonVersion }}
+      workdir: ${{ parameters.workdir }}
+
+  - script: |
+      set -eo pipefail
+      cd ${{ parameters.workdir }}
+      ln -s ../shared ./shared
+      cp .env.example .env
+      pipenv run pytest -v \
+        --junitxml=testResults/test-results-${{ parameters.workdir }}.xml \
+        --cov-report xml \
+        --cov-report term \
+        --cov-config=../.coveragerc \
+        --cov=. --cov=../shared tests
+    displayName: Run tests - ${{ parameters.workdir }}
+    env:
+      PYTHONPATH: $(System.DefaultWorkingDirectory)/${{ parameters.workdir }}
+
+  - task: PublishTestResults@2
+    condition: succeededOrFailed()
+    inputs:
+      testResultsFormat: "JUnit"
+      testResultsFiles: "$(System.DefaultWorkingDirectory)/**/test-results*.xml"
+      testRunTitle: "Tests ${{ parameters.workdir }}"
+    displayName: "Publish test results"
+
+  - task: CopyFiles@2
+    condition: succeededOrFailed()
+    inputs:
+      sourceFolder: "$(Build.SourcesDirectory)"
+      contents: "/**/coverage.xml"
+      targetFolder: "$(Build.ArtifactStagingDirectory)"
+    displayName: "Copy coverage report"
+
+  - task: PublishBuildArtifacts@1
+    condition: succeededOrFailed()
+    inputs:
+      artifactName: coverage
+    displayName: "Publish coverage report"
