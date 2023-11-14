@@ -15,7 +15,7 @@ parameters:
 
 variables:
   - name: serviceName
-    value: {{cookiecutter.project_name}}
+    value: cookiecutter.project_name
   - name: kindApp
     value: "app"
   - name: kindFxapp
@@ -23,9 +23,9 @@ variables:
   - name: azureFunctionsDirectory
     value: "azure_functions"
   - name: pulumiStackPrefix
-    value: pulumi-stack-{{cookiecutter.project_name}}
+    value: pulumi-stack-cookiecutter.project_name
   - name: cosmosDbNameSuffix
-    value: -db-{{cookiecutter.project_name}}
+    value: -db-cookiecutter.project_name
   - name: kindAppImage
     value: ${{ variables.serviceName }}-${{ variables.kindApp }}
   - name: kindFxAppImage
@@ -70,7 +70,7 @@ extends:
           - template: .ci/templates/validatePython.yaml@self
             parameters:
               workdir: "app"
-              pythonVersion: "{{cookiecutter.python_version}}"
+              pythonVersion: "cookiecutter.python_version"
       - job: validatePythonFxApp
         displayName: Validate Python Functions
         variables:
@@ -82,7 +82,7 @@ extends:
           - template: .ci/templates/validatePython.yaml@self
             parameters:
               workdir: "azure_functions"
-              pythonVersion: "{{cookiecutter.python_version}}"
+              pythonVersion: "cookiecutter.python_version"
       - job: validateFunctions
         displayName: Validate Functions
         steps:
@@ -181,7 +181,7 @@ extends:
           - template: .ci/templates/tests.yaml@self
             parameters:
               workdir: "azure_functions"
-              pythonVersion: "{{cookiecutter.python_version}}"
+              pythonVersion: "cookiecutter.python_version"
       - job: testsApp
         displayName: Run Tests App
         variables:
@@ -193,7 +193,7 @@ extends:
           - template: .ci/templates/tests.yaml@self
             parameters:
               workdir: "app"
-              pythonVersion: "{{cookiecutter.python_version}}"
+              pythonVersion: "cookiecutter.python_version"
       - job: coverage
         displayName: Code Coverage
         condition: succeededOrFailed()
@@ -240,7 +240,7 @@ extends:
           pulumiBlobStorage: $(pulumiStackPrefix)-$(ENVIRONMENT)
           pulumiMode: preview
           pulumiFolder: iaac_pulumi
-          pythonVersion: "{{cookiecutter.python_version}}"
+          pythonVersion: "cookiecutter.python_version"
 
     templatesDeploy:
       deployIaC:
@@ -253,7 +253,7 @@ extends:
             pulumiBlobStorage: $(pulumiStackPrefix)-$(ENVIRONMENT)
             pulumiMode: "up --yes"
             pulumiFolder: iaac_pulumi
-            pythonVersion: "{{cookiecutter.python_version}}"
+            pythonVersion: "cookiecutter.python_version"
       pushImages:
         displayName: Push Images
         dependsOn: []
