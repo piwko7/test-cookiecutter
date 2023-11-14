@@ -1,281 +1,281 @@
-#name: $(Date:yyyyMMdd)$(Rev:.r)
-#
-#pool:
-#  vmImage: "ubuntu-latest"
-#
-#parameters:
-#  - name: deploymentTarget
-#    displayName: "Deploy to:"
-#    type: string
-#    default: none
-#    values:
-#      - none
-#      - develop
-#      - testing
-#
-#variables:
-#  - name: serviceName
-#    value: {{cookiecutter.project_name}}
-#  - name: kindApp
-#    value: "app"
-#  - name: kindFxapp
-#    value: "fxapp"
-#  - name: azureFunctionsDirectory
-#    value: "azure_functions"
-#  - name: pulumiStackPrefix
-#    value: pulumi-stack-{{cookiecutter.project_name}}
-#  - name: cosmosDbNameSuffix
-#    value: -db-{{cookiecutter.project_name}}
-#  - name: kindAppImage
-#    value: ${{ variables.serviceName }}-${{ variables.kindApp }}
-#  - name: kindFxAppImage
-#    value: ${{ variables.serviceName }}-${{ variables.kindFxApp }}
-#
-#trigger:
-#  batch: true
-#  branches:
-#    include:
-#      - testing
-#      - develop
-#      - main
-#
-#pr:
-#  autoCancel: true
-#  drafts: false
-#
-#resources:
-#  repositories:
-#    - repository: templates
-#      type: git
-#      name: nanostore/nano-pipeline-templates
-#      ref: trunk
-#  containers:
-#    - container: golang
-#      image: golang:1.20.1
-#    - container: cli
-#      image: miqm/bicep-cli:latest
-#
-#extends:
-#  template: stages.yaml@templates
-#  parameters:
-#    jobsValidation:
-#      - job: validatePythonApp
-#        displayName: Validate Python App
-#        variables:
-#          PIP_CACHE_DIR: $(Pipeline.Workspace)/.local/pip
-#          PIPENV_CACHE_DIR: $(Pipeline.Workspace)/.local/pipenv
-#          WORKON_HOME: $(Pipeline.Workspace)/.local/share/virtualenvs
-#        steps:
-#          - checkout: self
-#          - template: .ci/templates/validatePython.yaml@self
-#            parameters:
-#              workdir: "app"
-#              pythonVersion: "{{cookiecutter.python_version}}"
-#      - job: validatePythonFxApp
-#        displayName: Validate Python Functions
-#        variables:
-#          PIP_CACHE_DIR: $(Pipeline.Workspace)/.local/pip
-#          PIPENV_CACHE_DIR: $(Pipeline.Workspace)/.local/pipenv
-#          WORKON_HOME: $(Pipeline.Workspace)/.local/share/virtualenvs
-#        steps:
-#          - checkout: self
-#          - template: .ci/templates/validatePython.yaml@self
-#            parameters:
-#              workdir: "azure_functions"
-#              pythonVersion: "{{cookiecutter.python_version}}"
-#      - job: validateFunctions
-#        displayName: Validate Functions
-#        steps:
-#          - checkout: self
-#          - template: /tasks/validateFunctions.yaml@templates
-#            parameters:
-#              kindFxapp: $(kindFxapp)
-#              azureFunctionsDirectory: $(azureFunctionsDirectory)
-#              functionsList: .helm/_values/functions_list.yaml
-#      - job: validateVariablesFxAppDev
-#        displayName: "[DEV] Validate FxApp Variables"
-#        steps:
-#          - checkout: self
-#          - template: /tasks/validateVariables.yaml@templates
-#            parameters:
-#              kindFxapp: $(kindFxapp)
-#              azureFunctionsDirectory: $(azureFunctionsDirectory)
-#              env: dev
-#      - job: validateVariablesAppDev
-#        displayName: "[DEV] Validate App Variables"
-#        steps:
-#          - checkout: self
-#          - template: /tasks/validateVariables.yaml@templates
-#            parameters:
-#              kindFxapp: $(kindApp)
-#              azureFunctionsDirectory: app
-#              env: dev
-#      - job: validateVariablesFxAppTst
-#        displayName: "[TST] Validate FxApp Variables"
-#        steps:
-#          - checkout: self
-#          - template: /tasks/validateVariables.yaml@templates
-#            parameters:
-#              kindFxapp: $(kindFxapp)
-#              azureFunctionsDirectory: $(azureFunctionsDirectory)
-#              env: tst
-#      - job: validateVariablesAppTst
-#        displayName: "[TST] Validate App Variables"
-#        steps:
-#          - checkout: self
-#          - template: /tasks/validateVariables.yaml@templates
-#            parameters:
-#              kindFxapp: $(kindApp)
-#              azureFunctionsDirectory: app
-#              env: tst
-#      - job: validateVariablesFxAppPrd
-#        displayName: "[PRD] Validate FxApp Variables"
-#        steps:
-#          - checkout: self
-#          - template: /tasks/validateVariables.yaml@templates
-#            parameters:
-#              kindFxapp: $(kindFxapp)
-#              azureFunctionsDirectory: $(azureFunctionsDirectory)
-#              env: prd
-#      - job: validateVariablesAppPrd
-#        displayName: "[PRD] Validate App Variables"
-#        steps:
-#          - checkout: self
-#          - template: /tasks/validateVariables.yaml@templates
-#            parameters:
-#              kindFxapp: $(kindApp)
-#              azureFunctionsDirectory: app
-#              env: prd
-#      - job: helmLint
-#        displayName: Helm Lint
-#        steps:
-#          - checkout: self
-#          - template: /tasks/helmLint.yaml@templates
-#            parameters:
-#              kindApp: ${{ variables.kindApp }}
-#              kindFxapp: ${{ variables.kindFxapp }}
-#              environment: dev
-#              acr: mockacrdev
-#          - template: /tasks/helmLint.yaml@templates
-#            parameters:
-#              kindApp: ${{ variables.kindApp }}
-#              kindFxapp: ${{ variables.kindFxapp }}
-#              environment: tst
-#              acr: mockacrtst
-#          - template: /tasks/helmLint.yaml@templates
-#            parameters:
-#              kindApp: ${{ variables.kindApp }}
-#              kindFxapp: ${{ variables.kindFxapp }}
-#              environment: prd
-#              acr: mockacrprd
-#
-#    jobsTests:
-#      - job: testsFxapp
-#        displayName: Run Tests Functions
-#        variables:
-#          PIP_CACHE_DIR: $(Pipeline.Workspace)/.local/pip
-#          PIPENV_CACHE_DIR: $(Pipeline.Workspace)/.local/pipenv
-#          WORKON_HOME: $(Pipeline.Workspace)/.local/share/virtualenvs
-#        steps:
-#          - checkout: self
-#          - template: .ci/templates/tests.yaml@self
-#            parameters:
-#              workdir: "azure_functions"
-#              pythonVersion: "{{cookiecutter.python_version}}"
-#      - job: testsApp
-#        displayName: Run Tests App
-#        variables:
-#          PIP_CACHE_DIR: $(Pipeline.Workspace)/.local/pip
-#          PIPENV_CACHE_DIR: $(Pipeline.Workspace)/.local/pipenv
-#          WORKON_HOME: $(Pipeline.Workspace)/.local/share/virtualenvs
-#        steps:
-#          - checkout: self
-#          - template: .ci/templates/tests.yaml@self
-#            parameters:
-#              workdir: "app"
-#              pythonVersion: "{{cookiecutter.python_version}}"
-#      - job: coverage
-#        displayName: Code Coverage
-#        condition: succeededOrFailed()
-#        dependsOn:
-#          - testsFxapp
-#          - testsApp
-#        steps:
-#          - checkout: self
-#          - template: .ci/templates/tests-coverage.yaml@self
-#
-#    jobsBuild:
-#      - job: buildDockerApp
-#        displayName: "Build docker image ${{ variables.kindApp }}"
-#        steps:
-#          - checkout: self
-#          - template: /tasks/buildDocker.yaml@templates
-#            parameters:
-#              image: $(kindAppImage)
-#              dockerFile: docker/Dockerfile.$(kindApp)
-#      - job: buildDockerFxApp
-#        displayName: "Build docker image ${{ variables.kindFxApp }}"
-#        steps:
-#          - checkout: self
-#          - template: /tasks/buildDocker.yaml@templates
-#            parameters:
-#              image: $(kindFxAppImage)
-#              dockerFile: docker/Dockerfile.$(kindFxApp)
-#
-#    templatesPreview:
-#      previewAks:
-#        displayName: Preview AKS
-#        container: cli
-#        template: /tasks/deployAKS.yaml@templates
-#        parameters:
-#          dryRun: true
-#          helmRelease: $(serviceName)
-#          kindApp: $(kindApp)
-#          kindFxapp: $(kindFxapp)
-#      previewPulumi:
-#        displayName: Preview IaC
-#        template: /tasks/pulumi.yaml@templates
-#        parameters:
-#          cosmosDbName: $(COSMOS_DB_ACCOUNT_NAME)$(cosmosDbNameSuffix)
-#          pulumiBlobStorage: $(pulumiStackPrefix)-$(ENVIRONMENT)
-#          pulumiMode: preview
-#          pulumiFolder: iaac_pulumi
-#          pythonVersion: "{{cookiecutter.python_version}}"
-#
-#    templatesDeploy:
-#      deployIaC:
-#        displayName: Deploy IaC
-#        dependsOn: []
-#        deploy:
-#          template: /tasks/pulumi.yaml@templates
-#          parameters:
-#            cosmosDbName: $(COSMOS_DB_ACCOUNT_NAME)$(cosmosDbNameSuffix)
-#            pulumiBlobStorage: $(pulumiStackPrefix)-$(ENVIRONMENT)
-#            pulumiMode: "up --yes"
-#            pulumiFolder: iaac_pulumi
-#            pythonVersion: "{{cookiecutter.python_version}}"
-#      pushImages:
-#        displayName: Push Images
-#        dependsOn: []
-#        deploy:
-#          template: /tasks/pushImages.yaml@templates
-#          parameters:
-#            acr: $(acr)
-#            images:
-#              - $(kindAppImage)
-#              - $(kindFxAppImage)
-#      deployAks:
-#        displayName: Deploy Application
-#        container: cli
-#        dependsOn:
-#          - deployIaC
-#          - pushImages
-#        deploy:
-#          template: /tasks/deployAKS.yaml@templates
-#          parameters:
-#            helmRelease: $(serviceName)
-#            kindApp: $(kindApp)
-#            kindFxapp: $(kindFxapp)
-#            kindAppImage: $(kindAppImage)
-#            kindFxAppImage: $(kindFxAppImage)
-#            dryRun: false
+name: $(Date:yyyyMMdd)$(Rev:.r)
+
+pool:
+  vmImage: "ubuntu-latest"
+
+parameters:
+  - name: deploymentTarget
+    displayName: "Deploy to:"
+    type: string
+    default: none
+    values:
+      - none
+      - develop
+      - testing
+
+variables:
+  - name: serviceName
+    value: {{cookiecutter.project_name}}
+  - name: kindApp
+    value: "app"
+  - name: kindFxapp
+    value: "fxapp"
+  - name: azureFunctionsDirectory
+    value: "azure_functions"
+  - name: pulumiStackPrefix
+    value: pulumi-stack-{{cookiecutter.project_name}}
+  - name: cosmosDbNameSuffix
+    value: -db-{{cookiecutter.project_name}}
+  - name: kindAppImage
+    value: ${{ variables.serviceName }}-${{ variables.kindApp }}
+  - name: kindFxAppImage
+    value: ${{ variables.serviceName }}-${{ variables.kindFxApp }}
+
+trigger:
+  batch: true
+  branches:
+    include:
+      - testing
+      - develop
+      - main
+
+pr:
+  autoCancel: true
+  drafts: false
+
+resources:
+  repositories:
+    - repository: templates
+      type: git
+      name: nanostore/nano-pipeline-templates
+      ref: trunk
+  containers:
+    - container: golang
+      image: golang:1.20.1
+    - container: cli
+      image: miqm/bicep-cli:latest
+
+extends:
+  template: stages.yaml@templates
+  parameters:
+    jobsValidation:
+      - job: validatePythonApp
+        displayName: Validate Python App
+        variables:
+          PIP_CACHE_DIR: $(Pipeline.Workspace)/.local/pip
+          PIPENV_CACHE_DIR: $(Pipeline.Workspace)/.local/pipenv
+          WORKON_HOME: $(Pipeline.Workspace)/.local/share/virtualenvs
+        steps:
+          - checkout: self
+          - template: .ci/templates/validatePython.yaml@self
+            parameters:
+              workdir: "app"
+              pythonVersion: "{{cookiecutter.python_version}}"
+      - job: validatePythonFxApp
+        displayName: Validate Python Functions
+        variables:
+          PIP_CACHE_DIR: $(Pipeline.Workspace)/.local/pip
+          PIPENV_CACHE_DIR: $(Pipeline.Workspace)/.local/pipenv
+          WORKON_HOME: $(Pipeline.Workspace)/.local/share/virtualenvs
+        steps:
+          - checkout: self
+          - template: .ci/templates/validatePython.yaml@self
+            parameters:
+              workdir: "azure_functions"
+              pythonVersion: "{{cookiecutter.python_version}}"
+      - job: validateFunctions
+        displayName: Validate Functions
+        steps:
+          - checkout: self
+          - template: /tasks/validateFunctions.yaml@templates
+            parameters:
+              kindFxapp: $(kindFxapp)
+              azureFunctionsDirectory: $(azureFunctionsDirectory)
+              functionsList: .helm/_values/functions_list.yaml
+      - job: validateVariablesFxAppDev
+        displayName: "[DEV] Validate FxApp Variables"
+        steps:
+          - checkout: self
+          - template: /tasks/validateVariables.yaml@templates
+            parameters:
+              kindFxapp: $(kindFxapp)
+              azureFunctionsDirectory: $(azureFunctionsDirectory)
+              env: dev
+      - job: validateVariablesAppDev
+        displayName: "[DEV] Validate App Variables"
+        steps:
+          - checkout: self
+          - template: /tasks/validateVariables.yaml@templates
+            parameters:
+              kindFxapp: $(kindApp)
+              azureFunctionsDirectory: app
+              env: dev
+      - job: validateVariablesFxAppTst
+        displayName: "[TST] Validate FxApp Variables"
+        steps:
+          - checkout: self
+          - template: /tasks/validateVariables.yaml@templates
+            parameters:
+              kindFxapp: $(kindFxapp)
+              azureFunctionsDirectory: $(azureFunctionsDirectory)
+              env: tst
+      - job: validateVariablesAppTst
+        displayName: "[TST] Validate App Variables"
+        steps:
+          - checkout: self
+          - template: /tasks/validateVariables.yaml@templates
+            parameters:
+              kindFxapp: $(kindApp)
+              azureFunctionsDirectory: app
+              env: tst
+      - job: validateVariablesFxAppPrd
+        displayName: "[PRD] Validate FxApp Variables"
+        steps:
+          - checkout: self
+          - template: /tasks/validateVariables.yaml@templates
+            parameters:
+              kindFxapp: $(kindFxapp)
+              azureFunctionsDirectory: $(azureFunctionsDirectory)
+              env: prd
+      - job: validateVariablesAppPrd
+        displayName: "[PRD] Validate App Variables"
+        steps:
+          - checkout: self
+          - template: /tasks/validateVariables.yaml@templates
+            parameters:
+              kindFxapp: $(kindApp)
+              azureFunctionsDirectory: app
+              env: prd
+      - job: helmLint
+        displayName: Helm Lint
+        steps:
+          - checkout: self
+          - template: /tasks/helmLint.yaml@templates
+            parameters:
+              kindApp: ${{ variables.kindApp }}
+              kindFxapp: ${{ variables.kindFxapp }}
+              environment: dev
+              acr: mockacrdev
+          - template: /tasks/helmLint.yaml@templates
+            parameters:
+              kindApp: ${{ variables.kindApp }}
+              kindFxapp: ${{ variables.kindFxapp }}
+              environment: tst
+              acr: mockacrtst
+          - template: /tasks/helmLint.yaml@templates
+            parameters:
+              kindApp: ${{ variables.kindApp }}
+              kindFxapp: ${{ variables.kindFxapp }}
+              environment: prd
+              acr: mockacrprd
+
+    jobsTests:
+      - job: testsFxapp
+        displayName: Run Tests Functions
+        variables:
+          PIP_CACHE_DIR: $(Pipeline.Workspace)/.local/pip
+          PIPENV_CACHE_DIR: $(Pipeline.Workspace)/.local/pipenv
+          WORKON_HOME: $(Pipeline.Workspace)/.local/share/virtualenvs
+        steps:
+          - checkout: self
+          - template: .ci/templates/tests.yaml@self
+            parameters:
+              workdir: "azure_functions"
+              pythonVersion: "{{cookiecutter.python_version}}"
+      - job: testsApp
+        displayName: Run Tests App
+        variables:
+          PIP_CACHE_DIR: $(Pipeline.Workspace)/.local/pip
+          PIPENV_CACHE_DIR: $(Pipeline.Workspace)/.local/pipenv
+          WORKON_HOME: $(Pipeline.Workspace)/.local/share/virtualenvs
+        steps:
+          - checkout: self
+          - template: .ci/templates/tests.yaml@self
+            parameters:
+              workdir: "app"
+              pythonVersion: "{{cookiecutter.python_version}}"
+      - job: coverage
+        displayName: Code Coverage
+        condition: succeededOrFailed()
+        dependsOn:
+          - testsFxapp
+          - testsApp
+        steps:
+          - checkout: self
+          - template: .ci/templates/tests-coverage.yaml@self
+
+    jobsBuild:
+      - job: buildDockerApp
+        displayName: "Build docker image ${{ variables.kindApp }}"
+        steps:
+          - checkout: self
+          - template: /tasks/buildDocker.yaml@templates
+            parameters:
+              image: $(kindAppImage)
+              dockerFile: docker/Dockerfile.$(kindApp)
+      - job: buildDockerFxApp
+        displayName: "Build docker image ${{ variables.kindFxApp }}"
+        steps:
+          - checkout: self
+          - template: /tasks/buildDocker.yaml@templates
+            parameters:
+              image: $(kindFxAppImage)
+              dockerFile: docker/Dockerfile.$(kindFxApp)
+
+    templatesPreview:
+      previewAks:
+        displayName: Preview AKS
+        container: cli
+        template: /tasks/deployAKS.yaml@templates
+        parameters:
+          dryRun: true
+          helmRelease: $(serviceName)
+          kindApp: $(kindApp)
+          kindFxapp: $(kindFxapp)
+      previewPulumi:
+        displayName: Preview IaC
+        template: /tasks/pulumi.yaml@templates
+        parameters:
+          cosmosDbName: $(COSMOS_DB_ACCOUNT_NAME)$(cosmosDbNameSuffix)
+          pulumiBlobStorage: $(pulumiStackPrefix)-$(ENVIRONMENT)
+          pulumiMode: preview
+          pulumiFolder: iaac_pulumi
+          pythonVersion: "{{cookiecutter.python_version}}"
+
+    templatesDeploy:
+      deployIaC:
+        displayName: Deploy IaC
+        dependsOn: []
+        deploy:
+          template: /tasks/pulumi.yaml@templates
+          parameters:
+            cosmosDbName: $(COSMOS_DB_ACCOUNT_NAME)$(cosmosDbNameSuffix)
+            pulumiBlobStorage: $(pulumiStackPrefix)-$(ENVIRONMENT)
+            pulumiMode: "up --yes"
+            pulumiFolder: iaac_pulumi
+            pythonVersion: "{{cookiecutter.python_version}}"
+      pushImages:
+        displayName: Push Images
+        dependsOn: []
+        deploy:
+          template: /tasks/pushImages.yaml@templates
+          parameters:
+            acr: $(acr)
+            images:
+              - $(kindAppImage)
+              - $(kindFxAppImage)
+      deployAks:
+        displayName: Deploy Application
+        container: cli
+        dependsOn:
+          - deployIaC
+          - pushImages
+        deploy:
+          template: /tasks/deployAKS.yaml@templates
+          parameters:
+            helmRelease: $(serviceName)
+            kindApp: $(kindApp)
+            kindFxapp: $(kindFxapp)
+            kindAppImage: $(kindAppImage)
+            kindFxAppImage: $(kindFxAppImage)
+            dryRun: false
