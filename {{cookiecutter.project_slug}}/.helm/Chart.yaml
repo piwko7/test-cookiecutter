@@ -1,0 +1,15 @@
+# Chart.yaml:
+apiVersion: v2
+name: {{cookiecutter.project_name}}
+version: 0.2.0
+appVersion: "0.2.0"
+dependencies:
+- name: app
+  repository: oci://nanodevopsbuildacr.azurecr.io/helm
+  version: ~0.2.0
+- name: fxapp
+  repository: oci://nanodevopsbuildacr.azurecr.io/helm
+  version: ~0.2.0
+- name: rollbar
+  repository: oci://nanodevopsbuildacr.azurecr.io/helm
+  version: ~0.2.0

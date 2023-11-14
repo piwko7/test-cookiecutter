@@ -72,4 +72,4 @@ create-symlinks-functions:
 	cd azure_functions && ls -al && ln -s ../shared ./shared
 
 functions-list:
-	scripts/functions_list.sh -a bifrost-fxapp -f ./azure_functions -o .helm/_values/functions_list.yaml
+	scripts/functions_list.sh -a {{cookiecutter.project_name}}-fxapp -f ./azure_functions -o .helm/_values/functions_list.yaml

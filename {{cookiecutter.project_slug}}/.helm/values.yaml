@@ -1,0 +1,63 @@
+tenantId: &tenant "153ec1e0-e0e7-4a31-82a0-d1f594ce8825"
+environments:
+  default:
+    secret: &envs-default-secret
+      APP_CONFIGURATION_CONNECTION_STRING: appConfigurationConnectionString
+      APPINSIGHTS_INSTRUMENTATIONKEY: appInsightsInstrumentationKey
+      APPLICATIONINSIGHTS_CONNECTION_STRING: appInsightsConnectionString
+      COSMOS_DB_CONNECTION_STRING: CosmosDbConnectionString
+      ROLLBAR_ACCESS_TOKEN: &envs-rollbar-secret rollbarBifrostAccessToken
+      SERVICE_BUS_CONNECTION_STRING: serviceBusConnectionString
+    plain: &envs-default-plain
+      APP_INSIGHTS_ENABLED: "true"
+      APPLICATION_INSIGHTS_SAMPLING: 1.0
+      AZURE_SDK_TRACING_IMPLEMENTATION: "opentelemetry"
+      AZURE_TRACING_ENABLED: true
+      EXTERNAL_LIB_LEVEL: WARNING
+      LOGGER_LEVEL: DEBUG
+      SSD_SERVICE_HOST: http://ssd-app
+
+rollbar:
+  csi:
+    tenantId: *tenant
+  environments:
+    secret:
+      ROLLBAR_ACCESS_TOKEN: *envs-rollbar-secret
+
+app:
+  csi:
+    tenantId: *tenant
+  workloadId:
+    tenantId: *tenant
+    enabled: true
+  environments:
+    plain:
+      <<: *envs-default-plain
+      APPLICATION_TYPE: "fastapi"
+      DISABLE_PRODUCT_IMPORT: "false"
+    secret:
+      <<: *envs-default-secret
+  affinity:
+    serviceType:
+      - api
+  tolerations:
+    serviceType:
+      value: api
+    trigger:
+      value: http
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 2
+  spot:
+    enabled: true
+    fixedReplicaCount: 0
+  podDisruptionBudget:
+    enabled: false
+    minAvailable: 1
+  topologySpreadConstraints:
+    enabled: false
+  ingress:
+    enabled: true
+    tls: true
+    subdomain: {{cookiecutter.project_name}}-api
