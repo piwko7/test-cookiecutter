@@ -13,8 +13,8 @@ def copy_dotenv():
 
 def print_post_gen_message():
     print(
-        "Please replace {{cookiecutter.project_name}} and "
-        "{{cookiecutter.project_name}} in .ci/pipeline.yaml with proper values"
+        "Please replace cookiecutter.project_name and "
+        "cookiecutter.python_version in .ci/pipeline.yaml with proper values"
     )
 
 
