@@ -62,4 +62,4 @@ Internal Nanostore [cookiecutter](https://github.com/audreyr/cookiecutter) templ
 
 ## What to do on your own:
 
-In order to use `pulumi` you need to configure `deploy_iaac` job in `.circleci/config.yml`
+Please replace cookiecutter.project_name and cookiecutter.python_version in `.ci/pipeline.yaml` with proper values.
