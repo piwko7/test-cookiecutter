@@ -18,8 +18,6 @@ variables:
     value: cookiecutter.project_name
   - name: kindApp
     value: "app"
-  - name: kindFxapp
-    value: "fxapp"
   - name: azureFunctionsDirectory
     value: "azure_functions"
   - name: pulumiStackPrefix
@@ -28,8 +26,6 @@ variables:
     value: -db-cookiecutter.project_name
   - name: kindAppImage
     value: ${{ variables.serviceName }}-${{ variables.kindApp }}
-  - name: kindFxAppImage
-    value: ${{ variables.serviceName }}-${{ variables.kindFxApp }}
 
 trigger:
   batch: true
@@ -83,24 +79,6 @@ extends:
             parameters:
               workdir: "azure_functions"
               pythonVersion: "cookiecutter.python_version"
-      - job: validateFunctions
-        displayName: Validate Functions
-        steps:
-          - checkout: self
-          - template: /tasks/validateFunctions.yaml@templates
-            parameters:
-              kindFxapp: $(kindFxapp)
-              azureFunctionsDirectory: $(azureFunctionsDirectory)
-              functionsList: .helm/_values/functions_list.yaml
-      - job: validateVariablesFxAppDev
-        displayName: "[DEV] Validate FxApp Variables"
-        steps:
-          - checkout: self
-          - template: /tasks/validateVariables.yaml@templates
-            parameters:
-              kindFxapp: $(kindFxapp)
-              azureFunctionsDirectory: $(azureFunctionsDirectory)
-              env: dev
       - job: validateVariablesAppDev
         displayName: "[DEV] Validate App Variables"
         steps:
@@ -110,15 +88,6 @@ extends:
               kindFxapp: $(kindApp)
               azureFunctionsDirectory: app
               env: dev
-      - job: validateVariablesFxAppTst
-        displayName: "[TST] Validate FxApp Variables"
-        steps:
-          - checkout: self
-          - template: /tasks/validateVariables.yaml@templates
-            parameters:
-              kindFxapp: $(kindFxapp)
-              azureFunctionsDirectory: $(azureFunctionsDirectory)
-              env: tst
       - job: validateVariablesAppTst
         displayName: "[TST] Validate App Variables"
         steps:
@@ -128,15 +97,6 @@ extends:
               kindFxapp: $(kindApp)
               azureFunctionsDirectory: app
               env: tst
-      - job: validateVariablesFxAppPrd
-        displayName: "[PRD] Validate FxApp Variables"
-        steps:
-          - checkout: self
-          - template: /tasks/validateVariables.yaml@templates
-            parameters:
-              kindFxapp: $(kindFxapp)
-              azureFunctionsDirectory: $(azureFunctionsDirectory)
-              env: prd
       - job: validateVariablesAppPrd
         displayName: "[PRD] Validate App Variables"
         steps:
@@ -153,19 +113,16 @@ extends:
           - template: /tasks/helmLint.yaml@templates
             parameters:
               kindApp: ${{ variables.kindApp }}
-              kindFxapp: ${{ variables.kindFxapp }}
               environment: dev
               acr: mockacrdev
           - template: /tasks/helmLint.yaml@templates
             parameters:
               kindApp: ${{ variables.kindApp }}
-              kindFxapp: ${{ variables.kindFxapp }}
               environment: tst
               acr: mockacrtst
           - template: /tasks/helmLint.yaml@templates
             parameters:
               kindApp: ${{ variables.kindApp }}
-              kindFxapp: ${{ variables.kindFxapp }}
               environment: prd
               acr: mockacrprd
 
@@ -213,15 +170,6 @@ extends:
             parameters:
               image: $(kindAppImage)
               dockerFile: docker/Dockerfile.$(kindApp)
-      - job: buildDockerFxApp
-        displayName: "Build docker image ${{ variables.kindFxApp }}"
-        steps:
-          - checkout: self
-          - template: /tasks/buildDocker.yaml@templates
-            parameters:
-              image: $(kindFxAppImage)
-              dockerFile: docker/Dockerfile.$(kindFxApp)
-
     templatesPreview:
       previewAks:
         displayName: Preview AKS
@@ -231,7 +179,6 @@ extends:
           dryRun: true
           helmRelease: $(serviceName)
           kindApp: $(kindApp)
-          kindFxapp: $(kindFxapp)
       previewPulumi:
         displayName: Preview IaC
         template: /tasks/pulumi.yaml@templates
@@ -263,7 +210,6 @@ extends:
             acr: $(acr)
             images:
               - $(kindAppImage)
-              - $(kindFxAppImage)
       deployAks:
         displayName: Deploy Application
         container: cli
@@ -275,7 +221,5 @@ extends:
           parameters:
             helmRelease: $(serviceName)
             kindApp: $(kindApp)
-            kindFxapp: $(kindFxapp)
             kindAppImage: $(kindAppImage)
-            kindFxAppImage: $(kindFxAppImage)
             dryRun: false
